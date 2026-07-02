@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>MacTTSPlugin</RootNamespace>
     <AssemblyName>MacTTSPlugin</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LangVersion>latest</LangVersion>
     <ACTReferencePath>ExternalLibraries/Advanced Combat Tracker.exe</ACTReferencePath>

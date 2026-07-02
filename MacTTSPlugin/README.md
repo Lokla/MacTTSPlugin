@@ -20,7 +20,7 @@ adaptations for CrossOver/macOS TTS behavior.
 
 ## Prerequisites
 
-1. .NET Framework 4.8 build environment for ACT plugins.
+1. .NET Framework 4.6.1+ build environment for ACT plugins.
 2. Access to `Advanced Combat Tracker.exe` for compile-time reference.
 
 ## Reproducible Build Setup
