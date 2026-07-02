@@ -11,6 +11,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   package:
     runs-on: ubuntu-latest
@@ -80,9 +83,10 @@ jobs:
             dist/MacTTSPlugin-${{ steps.version.outputs.version }}.zip
             dist/MacTTSPlugin-${{ steps.version.outputs.version }}/
 
-      - name: Publish to GitHub Release (tag builds)
+      - name: Create draft GitHub Release (tag builds)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: dist/MacTTSPlugin-${{ steps.version.outputs.version }}.zip
           generate_release_notes: true
+          draft: true
