@@ -34,5 +34,5 @@ jobs:
       - name: Upload plugin artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MacTTSPlugin-dll
+          name: MacTTSPlugin-dll-compile-check
           path: MacTTSPlugin/bin/Release/MacTTSPlugin.dll

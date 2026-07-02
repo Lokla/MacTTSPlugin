@@ -10,22 +10,21 @@ on:
   push:
     tags:
       - "v*"
-    branches:
-      - "main"
-      - "master"
 
 jobs:
   package:
     runs-on: ubuntu-latest
+    env:
+      ACT_DOWNLOAD_URL: https://advancedcombattracker.com/download.php?id=57
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Mono and zip
+      - name: Install Mono and zip tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y mono-complete zip
+          sudo apt-get install -y mono-complete zip unzip curl
 
       - name: Resolve version
         id: version
@@ -41,17 +40,30 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Using VERSION=$VERSION"
 
-      - name: Build ACT reference stub
+      - name: Download official ACT package
         run: |
-          cd tools/ActReferenceStub
-          xbuild AdvancedCombatTrackerStub.csproj /p:Configuration=Release
+          mkdir -p "$RUNNER_TEMP/act"
+          curl -fL "$ACT_DOWNLOAD_URL" -o "$RUNNER_TEMP/act/ACTv3.zip"
+          unzip -q "$RUNNER_TEMP/act/ACTv3.zip" -d "$RUNNER_TEMP/act/extracted"
 
-      - name: Build plugin
+      - name: Resolve ACT reference path
+        id: actref
+        shell: bash
+        run: |
+          ACT_REF="$(find "$RUNNER_TEMP/act/extracted" -type f -name 'Advanced Combat Tracker.exe' | head -n 1)"
+          if [[ -z "$ACT_REF" ]]; then
+            echo "Could not locate Advanced Combat Tracker.exe in downloaded package."
+            exit 1
+          fi
+          echo "act_reference=$ACT_REF" >> "$GITHUB_OUTPUT"
+          echo "Using ACT reference: $ACT_REF"
+
+      - name: Build plugin against official ACT identity
         run: |
           cd MacTTSPlugin
           xbuild MacTTSPlugin.csproj \
             /p:Configuration=Release \
-            /p:ACTReferencePath="$GITHUB_WORKSPACE/tools/ActReferenceStub/bin/Release/Advanced Combat Tracker.dll"
+            /p:ACTReferencePath="${{ steps.actref.outputs.act_reference }}"
 
       - name: Make package script executable
         run: chmod +x scripts/package_release.sh

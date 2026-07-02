@@ -67,16 +67,20 @@ How it works:
 
 1. Builds a lightweight compile-time ACT API stub (`tools/ActReferenceStub`).
 2. Builds `MacTTSPlugin` against that stub in CI.
-3. Uploads `MacTTSPlugin.dll` as a workflow artifact.
+3. Uploads `MacTTSPlugin.dll` as a compile-check artifact.
 
 Why a stub is used:
 
 1. `Advanced Combat Tracker.exe` is proprietary and must not be redistributed in this repository.
 2. CI still validates compile health without shipping ACT binaries.
 
-Note:
+Important:
 
-For real user releases, build locally against an actual ACT installation path.
+The CI artifact is compiled against a stub and can fail to load in ACT with
+assembly identity errors (for example `0x80131040`).
+
+For a loadable plugin DLL, build locally against your real
+`Advanced Combat Tracker.exe` path.
 
 ## GitHub Actions (Release Packaging)
 
@@ -86,14 +90,33 @@ Triggers:
 
 1. Manual run (`workflow_dispatch`) with optional `version` input.
 2. Push tags starting with `v` (for example `v1.0.0`).
-3. Push to `main`/`master`.
 
 Outputs:
 
 1. `dist/MacTTSPlugin-<version>.zip`
 2. Unzipped package folder as an artifact for inspection.
 
-On tag builds (`v*`), the workflow also attaches the zip file to a GitHub Release.
+How release CI builds a loadable DLL:
+
+1. Downloads the official ACT package from `https://advancedcombattracker.com/download.php?id=57`.
+2. Extracts `Advanced Combat Tracker.exe` from the zip at build time.
+3. Compiles `MacTTSPlugin` against that executable identity.
+4. Packages only plugin files (never redistributes ACT binaries).
+
+On tag builds (`v*`), the workflow attaches the zip to a GitHub Release.
+
+## Build a loadable release package locally
+
+1. Build against your installed ACT executable:
+
+./build.sh
+
+2. Package release zip:
+
+cd ..
+scripts/package_release.sh v0.1.1
+
+3. Upload `dist/MacTTSPlugin-v0.1.1.zip` to your GitHub Release.
 
 ## Install in ACT
 
