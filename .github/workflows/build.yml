@@ -1,0 +1,38 @@
+name: Build MacTTSPlugin
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Mono
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mono-complete
+
+      - name: Build ACT reference stub
+        run: |
+          cd tools/ActReferenceStub
+          xbuild AdvancedCombatTrackerStub.csproj /p:Configuration=Release
+
+      - name: Build plugin
+        run: |
+          cd MacTTSPlugin
+          xbuild MacTTSPlugin.csproj \
+            /p:Configuration=Release \
+            /p:ACTReferencePath="$GITHUB_WORKSPACE/tools/ActReferenceStub/bin/Release/Advanced Combat Tracker.dll"
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MacTTSPlugin-dll
+          path: MacTTSPlugin/bin/Release/MacTTSPlugin.dll

@@ -1,0 +1,76 @@
+name: Package Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version label (e.g. v1.0.0)"
+        required: false
+        default: "dev"
+  push:
+    tags:
+      - "v*"
+    branches:
+      - "main"
+      - "master"
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Mono and zip
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mono-complete zip
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+          else
+            VERSION="${GITHUB_SHA::7}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Using VERSION=$VERSION"
+
+      - name: Build ACT reference stub
+        run: |
+          cd tools/ActReferenceStub
+          xbuild AdvancedCombatTrackerStub.csproj /p:Configuration=Release
+
+      - name: Build plugin
+        run: |
+          cd MacTTSPlugin
+          xbuild MacTTSPlugin.csproj \
+            /p:Configuration=Release \
+            /p:ACTReferencePath="$GITHUB_WORKSPACE/tools/ActReferenceStub/bin/Release/Advanced Combat Tracker.dll"
+
+      - name: Make package script executable
+        run: chmod +x scripts/package_release.sh
+
+      - name: Package release zip
+        run: |
+          scripts/package_release.sh "${{ steps.version.outputs.version }}"
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MacTTSPlugin-${{ steps.version.outputs.version }}
+          path: |
+            dist/MacTTSPlugin-${{ steps.version.outputs.version }}.zip
+            dist/MacTTSPlugin-${{ steps.version.outputs.version }}/
+
+      - name: Publish to GitHub Release (tag builds)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/MacTTSPlugin-${{ steps.version.outputs.version }}.zip
+          generate_release_notes: true

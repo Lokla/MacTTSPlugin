@@ -1,0 +1,16 @@
+# OS/editor noise
+.DS_Store
+
+# Build outputs
+**/bin/
+**/obj/
+dist/
+
+# Local developer configuration
+**/build.local.env
+
+# Proprietary/licensed ACT binaries (must not be committed)
+**/Advanced Combat Tracker.exe
+MacTTSPlugin/ExternalLibraries/*.exe
+MacTTSPlugin/ExternalLibraries/*.dll
+MacTTSPlugin/ExternalLibraries/*.msi

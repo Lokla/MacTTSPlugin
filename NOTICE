@@ -1,0 +1,9 @@
+Third-Party Attribution
+
+This project references the architecture and workflow ideas from:
+
+- LinuxTTSPlugin
+  Repository: https://github.com/Minizbot2012/LinuxTTSPlugin
+
+MacTTSPlugin is a separate macOS-focused implementation for ACT/CrossOver.
+No proprietary ACT binaries are redistributed in this repository.
